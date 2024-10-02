@@ -24,6 +24,7 @@ class _GameScreenState extends State<GameScreen> {
   int score = 0;
   int wrongs = 0;
   int currentRound = 1;
+  bool showTraditionalLayout = false; // Toggle for layout
 
   late int num1;
   late int num2;
@@ -125,7 +126,7 @@ class _GameScreenState extends State<GameScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          _buildBackground(), // Old background
+          _buildBackground(),
           SingleChildScrollView(
             child: Padding(
               padding: const EdgeInsets.all(16.0),
@@ -135,16 +136,21 @@ class _GameScreenState extends State<GameScreen> {
                   _buildTopInfo(),
                   const SizedBox(height: 30),
                   _buildScoreAndWrongs(),
-                  const SizedBox(height: 30),
-                  _buildQuestion(),
                   const SizedBox(height: 20),
+                  _buildQuestion(),
+                  const SizedBox(height: 15),
                   _buildAnswerGrid(),
                   const SizedBox(height: 30),
                   _buildBottomButtons(),
-                  const SizedBox(height: 16),
                 ],
               ),
             ),
+          ),
+          // Button placed in the top left
+          Positioned(
+            top: 40, // Adjust top padding as needed
+            left: 16, // Adjust left padding as needed
+            child: _buildToggleLayoutButton(),
           ),
         ],
       ),
@@ -201,6 +207,12 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   Widget _buildQuestion() {
+    return showTraditionalLayout
+        ? _buildTraditionalLayout()
+        : _buildSimpleLayout();
+  }
+
+  Widget _buildSimpleLayout() {
     return Text(
       _getQuestionText(),
       style: const TextStyle(
@@ -212,12 +224,115 @@ class _GameScreenState extends State<GameScreen> {
     );
   }
 
+  Widget _buildTraditionalLayout() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Align(
+          alignment: Alignment.center,
+          child: Text(
+            "  " +
+                _formatNumber(num1), // Format the number with correct alignment
+            style: const TextStyle(
+              fontSize: 48,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              _getOperator(),
+              style: const TextStyle(
+                fontSize: 48,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              _formatNumber(num2),
+              style: const TextStyle(
+                fontSize: 48,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+          ],
+        ),
+        const Divider(
+            color: Colors.white, thickness: 2, indent: 50, endIndent: 50),
+        const Text(
+          "?",
+          style: TextStyle(
+            fontSize: 36,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildToggleLayoutButton() {
+    return IconButton(
+      icon: Icon(
+        showTraditionalLayout ? Icons.swap_horiz : Icons.swap_vert,
+        color: Colors.white,
+      ),
+      iconSize: 40, // Square button size
+      onPressed: () {
+        setState(() {
+          showTraditionalLayout = !showTraditionalLayout;
+        });
+      },
+    );
+  }
+
+  String _getOperator() {
+    switch (widget.gameMode) {
+      case 'Addition':
+        return "+";
+      case 'Subtraction':
+        return "-";
+      case 'Multiplication':
+        return "×";
+      case 'Division':
+        return "÷";
+      default:
+        return "";
+    }
+  }
+
+  String _getQuestionText() {
+    switch (widget.gameMode) {
+      case 'Addition':
+        return "$num1 + $num2 = ?";
+      case 'Subtraction':
+        return "$num1 - $num2 = ?";
+      case 'Multiplication':
+        return "$num1 × $num2 = ?";
+      case 'Division':
+        return "$num1 ÷ $num2 = ?";
+      default:
+        return "";
+    }
+  }
+
+  String _formatNumber(int number) {
+    String numStr = number.toString();
+    return numStr.split("").join(" "); // Add spaces between digits
+  }
+
   Widget _buildAnswerGrid() {
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: showTraditionalLayout ? 4 : 2, 
         crossAxisSpacing: 8,
         mainAxisSpacing: 8,
         childAspectRatio: 1.3,
@@ -256,7 +371,6 @@ class _GameScreenState extends State<GameScreen> {
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         _buildHintButton(),
-        _buildFinishButton(),
       ],
     );
   }
@@ -274,35 +388,6 @@ class _GameScreenState extends State<GameScreen> {
         style: TextStyle(fontSize: 24, color: Colors.white),
       ),
     );
-  }
-
-  Widget _buildFinishButton() {
-    return ElevatedButton(
-      onPressed: _endGame,
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.greenAccent,
-        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-      ),
-      child: const Text(
-        "Finish Game",
-        style: TextStyle(fontSize: 20),
-      ),
-    );
-  }
-
-  String _getQuestionText() {
-    switch (widget.gameMode) {
-      case 'Addition':
-        return "$num1 + $num2 = ?";
-      case 'Subtraction':
-        return "$num1 - $num2 = ?";
-      case 'Multiplication':
-        return "$num1 × $num2 = ?";
-      case 'Division':
-        return "$num1 ÷ $num2 = ?";
-      default:
-        return "";
-    }
   }
 
   void _showHint() {

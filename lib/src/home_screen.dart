@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mathsgame/src/GameScreen.dart';
 import 'package:mathsgame/src/SettingsScreen.dart';
 import 'package:mathsgame/src/TablesGameScreen.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:mathsgame/src/SquaringGameScreen.dart';
+import 'package:mathsgame/src/PrimeNumberGameScreen.dart';
+import 'package:mathsgame/src/EvenOddGameScreen.dart';
+import 'package:mathsgame/src/FactorialGameScreen.dart';
+import 'package:mathsgame/src/LeaderboardScreen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
   @override
   HomeScreenState createState() => HomeScreenState();
 }
@@ -51,12 +57,9 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    // Responsive grid: determine the number of columns based on screen width
     double screenWidth = MediaQuery.of(context).size.width;
-    int crossAxisCount =
-        screenWidth < 600 ? 2 : 3; // Adjust columns for wider screens
+    int crossAxisCount = screenWidth < 600 ? 2 : 3;
 
-    // Dynamic gradient based on gender
     final gradientColors = gender == 'male'
         ? [Colors.lightBlueAccent, Colors.pinkAccent]
         : [Colors.pinkAccent, Colors.lightBlueAccent]; // Swap colors for girls
@@ -71,21 +74,35 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         backgroundColor: gender == 'male' ? Colors.blue : Colors.pink,
         actions: [
           IconButton(
-              icon: const Icon(Icons.settings),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const SettingsScreen(),
-                  ),
-                );
-              })
+            icon: const Icon(Icons.settings),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const SettingsScreen(),
+                ),
+              );
+            },
+          ),
+          // IconButton(
+          //   icon: const Icon(Icons.leaderboard),
+          //   onPressed: () {
+          //     Navigator.push(
+          //       context,
+          //       MaterialPageRoute(
+          //         builder: (context) => const LeaderboardScreen(
+          //           leaderboardData: [],
+          //         ),
+          //       ),
+          //     );
+          //   },
+          // ),
         ],
       ),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: gradientColors, // Set dynamic colors based on gender
+            colors: gradientColors,
             begin: beginAli,
             end: beginEnd,
           ),
@@ -102,12 +119,15 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             ),
             const SizedBox(height: 20),
             ScaleTransition(
-                scale: _subtitleBounceAnimation,
-                child: const Text('Choose a game mode to get started!',
-                    style: TextStyle(
-                        fontSize: 18,
-                        color: Colors.white,
-                        fontWeight: FontWeight.w500))),
+              scale: _subtitleBounceAnimation,
+              child: const Text(
+                'Choose a game mode to get started!',
+                style: TextStyle(
+                    fontSize: 18,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w500),
+              ),
+            ),
             const SizedBox(height: 30),
             Expanded(
               child: GridView.count(
@@ -125,6 +145,14 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       context, Icons.percent, "Division", Colors.purple),
                   _buildGameModeButton(
                       context, Icons.table_chart, "Tables", Colors.blueAccent),
+                  _buildGameModeButton(
+                      context, Icons.exposure, "Squaring", Colors.teal),
+                  _buildGameModeButton(context, Icons.verified_user,
+                      "Prime Numbers", Colors.amber),
+                  _buildGameModeButton(
+                      context, Icons.adjust, "Even/Odd", Colors.lime),
+                  _buildGameModeButton(
+                      context, Icons.star, "Factorial", Colors.indigo),
                 ],
               ),
             ),
@@ -138,36 +166,16 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       BuildContext context, IconData icon, String label, Color color) {
     return GestureDetector(
       onTap: () {
-        if (label == "Tables") {
-          // Directly navigate to TablesGameScreen
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const TablesGameScreen(),
-            ),
-          );
-        } else {
-          // Show the dialog for other game modes
-          _showGameModeDialog(context, label);
-        }
+        _showGameModeDialog(context, label);
       },
       child: AnimatedScaleButton(
-          color: color,
-          icon: icon,
-          label: label,
-          onTap: () {
-            if (label == "Tables") {
-              // Navigate to TablesGameScreen when "Tables" is selected
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const TablesGameScreen(),
-                ),
-              );
-            } else {
-              _showGameModeDialog(context, label);
-            }
-          }),
+        color: color,
+        icon: icon,
+        label: label,
+        onTap: () {
+          _showGameModeDialog(context, label);
+        },
+      ),
     );
   }
 
@@ -183,7 +191,6 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         return StatefulBuilder(
           builder: (context, setState) {
             final mediaQuery = MediaQuery.of(context);
-            // Constrain the dialog size based on available height and width
             double dialogWidth = mediaQuery.size.width * 0.9;
             double maxHeight = mediaQuery.size.height * 0.7; // Maximum height
 
@@ -199,7 +206,6 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   maxHeight: maxHeight, // Constrain height
                 ),
                 child: SafeArea(
-                  // Ensures content doesn't go behind notches
                   child: SingleChildScrollView(
                     child: Padding(
                       padding: const EdgeInsets.all(20),
@@ -249,7 +255,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                               });
                             },
                             child: Text(
-                              'Advance Settings',
+                              'Advanced Settings',
                               style: TextStyle(
                                 color: gender == 'male'
                                     ? Colors.blueAccent
@@ -293,8 +299,68 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                   onPressed: () => Navigator.pop(context),
                                   child: const Text("Cancel")),
                               ElevatedButton(
-                                  onPressed: () {
-                                    Navigator.pop(context);
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                  if (gameMode == "Tables") {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => TablesGameScreen(
+                                          gender: gender!,
+                                          difficulty: selectedDifficulty,
+                                          rounds: rounds,
+                                          wrongAnswers: wrongAnswers,
+                                        ),
+                                      ),
+                                    );
+                                  } else if (gameMode == "Squaring Numbers") {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            SquaringGameScreen(
+                                          difficulty: selectedDifficulty,
+                                          rounds: rounds,
+                                          wrongAnswersAllowed: wrongAnswers,
+                                        ),
+                                      ),
+                                    );
+                                  } else if (gameMode == "Prime Numbers") {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            PrimeNumberGameScreen(
+                                          difficulty: selectedDifficulty,
+                                          rounds: rounds,
+                                          wrongAnswersAllowed: wrongAnswers,
+                                        ),
+                                      ),
+                                    );
+                                  } else if (gameMode == "Even/Odd") {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => EvenOddGameScreen(
+                                          difficulty: selectedDifficulty,
+                                          rounds: rounds,
+                                          wrongAnswersAllowed: wrongAnswers,
+                                        ),
+                                      ),
+                                    );
+                                  } else if (gameMode == "Factorial Numbers") {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            FactorialGameScreen(
+                                          difficulty: selectedDifficulty,
+                                          rounds: rounds,
+                                          wrongAnswersAllowed: wrongAnswers,
+                                        ),
+                                      ),
+                                    );
+                                  } else {
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
@@ -306,8 +372,10 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                         ),
                                       ),
                                     );
-                                  },
-                                  child: const Text("Start Game")),
+                                  }
+                                },
+                                child: const Text("Start Game"),
+                              ),
                             ],
                           ),
                         ],

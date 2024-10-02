@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'home_screen.dart'; // Import your HomeScreen widget
+import 'company_info_screen.dart'; // Import Company Info Screen
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -166,6 +167,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 textStyle: const TextStyle(fontSize: 20),
               ),
               child: const Text("Save Changes"),
+            ),
+            const SizedBox(height: 40), // Adds spacing before company section
+
+            // Company Information Section
+            ListTile(
+              title: const Text("Company Information"),
+              leading: const Icon(Icons.business),
+              onTap: () {
+                // Navigate to Company Information Screen
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const CompanyInfoScreen(),
+                  ),
+                );
+              },
             ),
           ],
         ),
